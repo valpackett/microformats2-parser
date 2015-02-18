@@ -26,6 +26,7 @@ library
       , time >= 1.4.0 && < 2
       , either
       , safe
+      , data-default
       , microformats2-types == 0.3.*
       , html-conduit
       , xml-lens
@@ -41,11 +42,14 @@ test-suite tests
     build-depends:
         base >= 4.0.0.0 && < 5
       , microformats2-parser
+      , microformats2-types
       , raw-strings-qq
       , transformers
       , process
       , directory
+      , data-default
       , html-conduit
+      , xml-lens
       , hspec == 1.*
         , HUnit
         , QuickCheck
