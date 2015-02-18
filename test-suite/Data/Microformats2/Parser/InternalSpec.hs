@@ -5,7 +5,7 @@ module Data.Microformats2.Parser.InternalSpec (spec) where
 import           Test.Hspec
 import           Text.RawString.QQ
 import           Text.HTML.DOM
--- import           Data.Microformats2
+import           Text.XML.Lens (documentRoot)
 import           Data.Microformats2.Parser.Internal
 
 {-# ANN module ("HLint: ignore Redundant do"::String) #-}
