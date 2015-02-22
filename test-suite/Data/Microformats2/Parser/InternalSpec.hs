@@ -28,6 +28,39 @@ spec = do
       nm [r|<span class="p-name"> <span class="value"> 	Hello 	
   <img alt="Span With Img" src="x.png"> </span> 	<em class="value-title" title="&& Value Title">nope</em> </span>|] `shouldBe` Just "Hello Span With Img&& Value Title"
 
+    it "parses u- properties" $ do
+      let ur = extractProperty U "url" . documentRoot . parseLBS
+      ur [r|<a class="u-url" href="/yo/a">link</a>|] `shouldBe` Just "/yo/a"
+      ur [r|<area class="u-url" href="/yo/area"/>|] `shouldBe` Just "/yo/area"
+      ur [r|<img class="u-url" src="/yo/img"/>|] `shouldBe` Just "/yo/img"
+      ur [r|<audio class="u-url" src="/yo/audio"/>|] `shouldBe` Just "/yo/audio"
+      ur [r|<video class="u-url" src="/yo/video"/>|] `shouldBe` Just "/yo/video"
+      ur [r|<source class="u-url" src="/yo/source"/>|] `shouldBe` Just "/yo/source"
+      ur [r|<span class="u-url"><b class=value>/yo</b><em class="value">/vcp</span>|] `shouldBe` Just "/yo/vcp"
+      ur [r|<abbr class="u-url" title="/yo/abbr"/>|] `shouldBe` Just "/yo/abbr"
+      ur [r|<data class="u-url" value="/yo/data"/>|] `shouldBe` Just "/yo/data"
+      ur [r|<input class="u-url" value="/yo/input"/>|] `shouldBe` Just "/yo/input"
+      ur [r|<span class="u-url">/yo/span</span>|] `shouldBe` Just "/yo/span"
+
+    it "parses u- properties" $ do
+      let dt = extractProperty Dt "updated" . documentRoot . parseLBS
+      dt [r|<time class="dt-updated" datetime="ti.me">someday</time>|] `shouldBe` Just "ti.me"
+      dt [r|<ins class="dt-updated" datetime="i.ns">someday</ins>|] `shouldBe` Just "i.ns"
+      dt [r|<del class="dt-updated" datetime="d.el">someday</del>|] `shouldBe` Just "d.el"
+      dt [r|<abbr class="dt-updated" title="ab.br">AB</abbr>|] `shouldBe` Just "ab.br"
+      dt [r|<data class="dt-updated" value="da.ta"/>|] `shouldBe` Just "da.ta"
+      dt [r|<input class="dt-updated" value="i.np.ut"/>|] `shouldBe` Just "i.np.ut"
+      dt [r|<span class="dt-updated">
+            <abbr class="value" title="vcp">VCP</abbr>
+            <time class="value" datetime="ti">TIME</time>
+            <ins class="value" datetime="me">lol</time>
+          </span>|] `shouldBe` Just "vcptime"
+      dt [r|<span class="dt-updated">date</span>|] `shouldBe` Just "date"
+
+    it "parses e- properties" $ do
+      let ct = extractProperty E "content" . documentRoot . parseLBS
+      ct [r|<div class="e-content"><em>hello html</em>!</div>|] `shouldBe` Just "<em>hello html</em>!"
+
   describe "implyProperty" $ do
     it "parses implied p-name" $ do
       let nm = implyProperty P "name" . documentRoot . parseLBS
