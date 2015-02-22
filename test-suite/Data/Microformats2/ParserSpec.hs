@@ -7,6 +7,7 @@ import           TestCommon
 import           Data.Default
 import           Data.Microformats2
 import           Data.Microformats2.Parser
+import           Control.Applicative
 
 {-# ANN module ("HLint: ignore Redundant do"::String) #-}
 
@@ -24,16 +25,17 @@ spec = do
           <span class="p-altitude">1.2345</span>
         </p>
         <p class="h-geo">
-          <data class="p-latitude" value="1.2345">
+          <data class="p-latitude" value="123.45">
+          <input class="p-latitude" value="678.9">
         </p>
-      </div>|] `shouldBe` [ def { geoLatitude = Just 37.33168, geoLongitude = Just (-122.03016), geoAltitude = Just 1.2345 }
-                          , def { geoLatitude = Just 1.2345 } ]
+      </div>|] `shouldBe` [ def { geoLatitude = pure 37.33168, geoLongitude = pure (-122.03016), geoAltitude = pure 1.2345 }
+                          , def { geoLatitude = [123.45, 678.9] } ]
 
     it "ignores invalid properties" $ do
       parseGeo' [xml|<p class="h-geo">
           <span class="p-latitude">HELLO WORLD!!</span>
           <span class="p-altitude">1.2345</span>
-        </p>|] `shouldBe` [ def { geoAltitude = Just 1.2345 } ]
+        </p>|] `shouldBe` [ def { geoAltitude = pure 1.2345 } ]
 
   describe "parseAdr" $ do
     let parseAdr' = parseAdr . documentRoot . parseLBS
@@ -50,8 +52,8 @@ spec = do
             <span class="p-country-name">C</span>
             <span class="p-label">LB</span>
           </article>
-        </div>|] `shouldBe` [ def { adrStreetAddress = Just "SA", adrExtendedAddress = Just "EA"
-                                  , adrPostOfficeBox = Just "PO", adrLocality = Just "L"
-                                  , adrRegion = Just "R", adrPostalCode = Just "PC"
-                                  , adrCountryName = Just "C", adrLabel = Just "LB"
+        </div>|] `shouldBe` [ def { adrStreetAddress = pure "SA", adrExtendedAddress = pure "EA"
+                                  , adrPostOfficeBox = pure "PO", adrLocality = pure "L"
+                                  , adrRegion = pure "R", adrPostalCode = pure "PC"
+                                  , adrCountryName = pure "C", adrLabel = pure "LB"
                                   } ]
