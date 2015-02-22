@@ -27,7 +27,7 @@ library
       , either
       , safe
       , data-default
-      , microformats2-types == 0.3.*
+      , microformats2-types == 0.4.*
       , html-conduit
       , xml-lens
       , blaze-markup

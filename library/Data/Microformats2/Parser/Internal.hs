@@ -65,8 +65,8 @@ getText e = Just . T.strip <$> T.concat $ e ^.. basicText
 getAllText ∷ Element → Maybe Text
 getAllText e = Just . T.strip <$> T.concat $ e ^.. entire . nodes . traverse . _ContentWithAlts
 
-getAllHtml ∷ Element → Maybe Text
-getAllHtml e = Just . T.strip <$> T.concat $ e ^.. nodes . traverse . _InnerHtml
+getAllHtml ∷ Element → [Text]
+getAllHtml e = [T.strip <$> T.concat $ e ^.. nodes . traverse . _InnerHtml]
 
 getAbbrTitle ∷ Element → Maybe Text
 getAbbrTitle e = e ^. el "abbr" . attribute "title"
@@ -120,32 +120,35 @@ extractValueClassPattern fs e = if' (isJust $ e ^? valueParts) $ extractValuePar
         valueParts          ∷ Applicative f => (Element → f Element) → Element → f Element
         valueParts          = entire . hasOneClass ["value", "value-title"]
 
-findProperty ∷ Element → String → Maybe Element
-findProperty e n = e ^? entire . hasClass n
+findProperty ∷ Element → String → [Element]
+findProperty e n = e ^.. entire . hasClass n
 
 data PropType = P | U | Dt | E
 
-extractProperty ∷ PropType → String → Element → Maybe Text
-extractProperty P n e' = do
-  e ← findProperty e' $ "p-" ++ n
-  asum $ [ extractValueClassPattern [extractValueTitle, extractValue]
-         , extractValue ] <*> pure e
-extractProperty U n e' = do
-  e ← findProperty e' $ "u-" ++ n
-  asum $ [ getAAreaHref, getImgAudioVideoSourceSrc
-         , extractValueClassPattern [extractValueTitle, extractValue]
-         , getAbbrTitle, getDataInputValue, getAllText ] <*> pure e
-extractProperty Dt n e' = do
-  e ← findProperty e' $ "dt-" ++ n
-  let ms = [ getTimeInsDelDatetime, getAbbrTitle, getDataInputValue ]
-  asum $ (extractValueClassPattern ms) : ms ++ [getAllText] <*> pure e
+extract ∷ [Element → Maybe Text] → Element → [Text]
+extract ps e = catMaybes $ [ \x -> asum $ ps <*> pure x ] <*> pure e
+
+extractProperty ∷ PropType → String → Element → [Text]
+extractProperty P n e' =
+  findProperty e' ("p-" ++ n) >>=
+  extract [ extractValueClassPattern [extractValueTitle, extractValue]
+          , extractValue ]
+extractProperty U n e' =
+  findProperty e' ("u-" ++ n) >>=
+  extract [ getAAreaHref, getImgAudioVideoSourceSrc
+          , extractValueClassPattern [extractValueTitle, extractValue]
+          , getAbbrTitle, getDataInputValue, getAllText ]
+extractProperty Dt n e' =
+  findProperty e' ("dt-" ++ n) >>=
+  extract ((extractValueClassPattern ms) : ms ++ [getAllText])
+  where ms = [ getTimeInsDelDatetime, getAbbrTitle, getDataInputValue ]
 extractProperty E n e' = findProperty e' ("e-" ++ n) >>= getAllHtml
 
-extractPropertyL ∷ PropType → String → Element → Maybe TL.Text
-extractPropertyL t n e = return . TL.fromStrict =<< extractProperty t n e
+extractPropertyL ∷ PropType → String → Element → [TL.Text]
+extractPropertyL t n e = TL.fromStrict <$> extractProperty t n e
 
-extractPropertyR ∷ Read α ⇒ PropType → String → Element → Maybe α
-extractPropertyR t n e = readMay =<< return . T.unpack =<< extractProperty t n e
+extractPropertyR ∷ Read α ⇒ PropType → String → Element → [α]
+extractPropertyR t n e = catMaybes $ readMay <$> T.unpack <$> extractProperty t n e
 
 implyProperty ∷ PropType → String → Element → Maybe Text
 implyProperty P "name"  e = asum $ [ getImgAreaAlt, getAbbrTitle
