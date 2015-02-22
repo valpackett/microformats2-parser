@@ -43,6 +43,7 @@ test-suite tests
     build-depends:
         base >= 4.0.0.0 && < 5
       , hspec == 2.1.*
+      , template-haskell
       , microformats2-parser
       , microformats2-types
       , raw-strings-qq
