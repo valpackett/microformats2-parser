@@ -15,16 +15,13 @@ import           Text.Blaze.Renderer.Text
 import           Text.Regex.PCRE.Heavy
 import           Safe (readMay)
 
-tReadMay ∷ Read a ⇒ Text → Maybe a
-tReadMay = readMay . T.unpack
-
 if' ∷ Bool → Maybe a → Maybe a
 if' c x = if c then x else Nothing
 
-hasOneClass ∷ Applicative f ⇒ [String] → (Element → f Element) → Element → f Element
+hasOneClass ∷ Applicative φ ⇒ [String] → (Element → φ Element) → Element → φ Element
 hasOneClass ns = attributeSatisfies "class" $ \a → any (\x → T.isInfixOf (T.pack x) a) ns
 
-hasClass ∷ Applicative f ⇒ String → (Element → f Element) → Element → f Element
+hasClass ∷ Applicative φ ⇒ String → (Element → φ Element) → Element → φ Element
 hasClass n = attributeSatisfies "class" $ T.isInfixOf . T.pack $ n
 
 getOnlyChildren ∷ Element → [Element]
@@ -59,7 +56,7 @@ _ContentWithAlts = prism' NodeContent $ \s → case s of
   NodeElement e → e ^. el "img" . attribute "alt"
   _ → Nothing
 
-basicText ∷ Applicative f ⇒ (Text → f Text) → Element → f Element
+basicText ∷ Applicative φ ⇒ (Text → φ Text) → Element → φ Element
 basicText = entire . nodes . traverse . _Content'
 
 getText ∷ Element → Maybe Text
@@ -143,6 +140,12 @@ extractProperty Dt n e' = do
   let ms = [ getTimeInsDelDatetime, getAbbrTitle, getDataInputValue ]
   asum $ (extractValueClassPattern ms) : ms ++ [getAllText] <*> pure e
 extractProperty E n e' = findProperty e' ("e-" ++ n) >>= getAllHtml
+
+extractPropertyL ∷ PropType → String → Element → Maybe TL.Text
+extractPropertyL t n e = return . TL.fromStrict =<< extractProperty t n e
+
+extractPropertyR ∷ Read α ⇒ PropType → String → Element → Maybe α
+extractPropertyR t n e = readMay =<< return . T.unpack =<< extractProperty t n e
 
 implyProperty ∷ PropType → String → Element → Maybe Text
 implyProperty P "name"  e = asum $ [ getImgAreaAlt, getAbbrTitle
