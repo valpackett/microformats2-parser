@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes, UnicodeSyntax #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Data.Microformats2.Parser.Internal where
 
@@ -10,7 +11,6 @@ import           Control.Applicative
 import           Text.XML.Lens hiding (re)
 import           Text.Regex.PCRE.Heavy
 import           Safe (readMay)
-import           Debug.Trace
 
 tReadMay ∷ Read a ⇒ Text → Maybe a
 tReadMay = readMay . T.unpack
@@ -24,8 +24,17 @@ hasOneClass ns = attributeSatisfies "class" $ \a → any (\x → T.isInfixOf (T.
 hasClass ∷ Applicative f ⇒ String → (Element → f Element) → Element → f Element
 hasClass n = attributeSatisfies "class" $ T.isInfixOf . T.pack $ n
 
-valueParts ∷ Applicative f ⇒ (Element → f Element) → Element → f Element
-valueParts = entire . hasOneClass ["value", "value-title"]
+getOnlyChildren ∷ Element → [Element]
+getOnlyChildren e = if ((lengthOf plate e) == 1) then e ^.. plate else []
+
+getOnlyChild ∷ Name → Element → Maybe Element
+getOnlyChild n e = if' ((lengthOf plate e) == 1) $ e ^? plate . el n
+
+getOnlyOfType ∷ Name → Element → Maybe Element
+getOnlyOfType n e = if' ((lengthOf (plate . el n) e) == 1) $ e ^? plate . el n
+
+els ∷ [Name] → Traversal' Element Element
+els ns f s = if (elementName s) `elem` ns then f s else pure s
 
 removeWhitespace ∷ Text → Text
 removeWhitespace = gsub [re|(\s+|&nbsp;)|] (" " ∷ String) -- lol vim |||||||
@@ -38,7 +47,7 @@ _Content' = prism' NodeContent $ \s → case s of
 _ContentWithAlts ∷ Prism' Node Text
 _ContentWithAlts = prism' NodeContent $ \s → case s of
   NodeContent c → Just $ removeWhitespace c
-  NodeElement e → if' (e ^. name == "img") $ e ^. attribute "alt"
+  NodeElement e → e ^. el "img" . attribute "alt"
   _ → Nothing
 
 basicText ∷ Applicative f ⇒ (Text → f Text) → Element → f Element
@@ -54,37 +63,28 @@ getAllText ∷ Element → Maybe Text
 getAllText e = Just . T.strip <$> T.concat $ e ^.. allText
 
 getAbbrTitle ∷ Element → Maybe Text
-getAbbrTitle e = if' (e ^. name == "abbr") $ e ^. attribute "title"
+getAbbrTitle e = e ^. el "abbr" . attribute "title"
 
 getDataInputValue ∷ Element → Maybe Text
-getDataInputValue e = if' (e ^. name == "data" || e ^. name == "input") $ e ^. attribute "value"
+getDataInputValue e = e ^. els ["data", "input"] . attribute "value"
 
 getImgSrc ∷ Element → Maybe Text
-getImgSrc e = if' (e ^. name == "img") $ e ^. attribute "src"
+getImgSrc e = e ^. el "img" . attribute "src"
 
 getObjectData ∷ Element → Maybe Text
-getObjectData e = if' (e ^. name == "object") $ e ^. attribute "data"
+getObjectData e = e ^. el "object" . attribute "data"
 
 getImgAreaAlt ∷ Element → Maybe Text
-getImgAreaAlt e = if' (e ^. name == "img" || e ^. name == "area") $ e ^. attribute "alt"
+getImgAreaAlt e = e ^. els ["img", "area"] . attribute "alt"
 
 getAAreaHref ∷ Element → Maybe Text
-getAAreaHref e = if' (e ^. name == "a" || e ^. name == "area") $ e ^. attribute "href"
-
-getOnlyChildren ∷ Element → [Element]
-getOnlyChildren e = if ((lengthOf plate e) == 1) then e ^.. plate else []
-
-getOnlyChild ∷ Name → Element → Maybe Element
-getOnlyChild n e = if' ((lengthOf plate e) == 1) $ e ^? plate . el n
+getAAreaHref e = e ^. els ["a", "area"] . attribute "href"
 
 getOnlyChildImgAreaAlt ∷ Element → Maybe Text
 getOnlyChildImgAreaAlt e = (^. attribute "alt") =<< (asum $ getOnlyChild <$> [ "img", "area" ] <*> pure e)
 
 getOnlyChildAbbrTitle ∷ Element → Maybe Text
 getOnlyChildAbbrTitle e = (^. attribute "title") =<< getOnlyChild "abbr" e
-
-getOnlyOfType ∷ Name → Element → Maybe Element
-getOnlyOfType n e = if' ((lengthOf (plate . el n) e) == 1) $ e ^? plate . el n
 
 getOnlyOfTypeImgSrc ∷ Element → Maybe Text
 getOnlyOfTypeImgSrc e = (^. attribute "src") =<< getOnlyOfType "img" e
@@ -103,6 +103,7 @@ extractValueClassPattern e' = if' (isJust $ e' ^? valueParts) $ extractValuePart
   where extractValueParts e = Just . T.concat . catMaybes $ e ^.. valueParts . to extractValuePart
         extractValuePart  e = asum $ [ extractValueTitle, extractValue ] <*> pure e
         extractValueTitle e = if' (isJust $ e ^? hasClass "value-title") $ e ^. attribute "title"
+        valueParts = entire . hasOneClass ["value", "value-title"]
 
 findProperty ∷ Element → String → Maybe Element
 findProperty e n = e ^? entire . hasClass n
