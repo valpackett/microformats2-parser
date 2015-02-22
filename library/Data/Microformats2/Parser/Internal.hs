@@ -4,11 +4,14 @@
 module Data.Microformats2.Parser.Internal where
 
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import           Data.Text (Text)
 import           Data.Foldable (asum)
 import           Data.Maybe
 import           Control.Applicative
 import           Text.XML.Lens hiding (re)
+import           Text.Blaze
+import           Text.Blaze.Renderer.Text
 import           Text.Regex.PCRE.Heavy
 import           Safe (readMay)
 
@@ -44,6 +47,12 @@ _Content' = prism' NodeContent $ \s → case s of
   NodeContent c → Just $ removeWhitespace c
   _ → Nothing
 
+_InnerHtml ∷ Prism' Node Text
+_InnerHtml = prism' NodeContent $ \s → case s of
+  NodeContent c → Just $ removeWhitespace c
+  NodeElement e → Just . TL.toStrict . renderMarkup . toMarkup $ e
+  _ → Nothing
+
 _ContentWithAlts ∷ Prism' Node Text
 _ContentWithAlts = prism' NodeContent $ \s → case s of
   NodeContent c → Just $ removeWhitespace c
@@ -56,11 +65,11 @@ basicText = entire . nodes . traverse . _Content'
 getText ∷ Element → Maybe Text
 getText e = Just . T.strip <$> T.concat $ e ^.. basicText
 
-allText ∷ Applicative f ⇒ (Text → f Text) → Element → f Element
-allText = entire . nodes . traverse . _ContentWithAlts
-
 getAllText ∷ Element → Maybe Text
-getAllText e = Just . T.strip <$> T.concat $ e ^.. allText
+getAllText e = Just . T.strip <$> T.concat $ e ^.. entire . nodes . traverse . _ContentWithAlts
+
+getAllHtml ∷ Element → Maybe Text
+getAllHtml e = Just . T.strip <$> T.concat $ e ^.. nodes . traverse . _InnerHtml
 
 getAbbrTitle ∷ Element → Maybe Text
 getAbbrTitle e = e ^. el "abbr" . attribute "title"
@@ -80,6 +89,12 @@ getImgAreaAlt e = e ^. els ["img", "area"] . attribute "alt"
 getAAreaHref ∷ Element → Maybe Text
 getAAreaHref e = e ^. els ["a", "area"] . attribute "href"
 
+getImgAudioVideoSourceSrc ∷ Element → Maybe Text
+getImgAudioVideoSourceSrc e = e ^. els ["img", "audio", "video", "source"] . attribute "src"
+
+getTimeInsDelDatetime ∷ Element → Maybe Text
+getTimeInsDelDatetime e = e ^. els ["time", "ins", "del"] . attribute "datetime"
+
 getOnlyChildImgAreaAlt ∷ Element → Maybe Text
 getOnlyChildImgAreaAlt e = (^. attribute "alt") =<< (asum $ getOnlyChild <$> [ "img", "area" ] <*> pure e)
 
@@ -98,12 +113,15 @@ getOnlyOfTypeAAreaHref e = (^. attribute "href") =<< (asum $ getOnlyOfType <$> [
 extractValue ∷ Element → Maybe Text
 extractValue e = asum $ [ getAbbrTitle, getDataInputValue, getImgAreaAlt, getAllText ] <*> pure e
 
-extractValueClassPattern ∷ Element → Maybe Text
-extractValueClassPattern e' = if' (isJust $ e' ^? valueParts) $ extractValueParts e'
-  where extractValueParts e = Just . T.concat . catMaybes $ e ^.. valueParts . to extractValuePart
-        extractValuePart  e = asum $ [ extractValueTitle, extractValue ] <*> pure e
-        extractValueTitle e = if' (isJust $ e ^? hasClass "value-title") $ e ^. attribute "title"
-        valueParts = entire . hasOneClass ["value", "value-title"]
+extractValueTitle ∷ Element → Maybe Text
+extractValueTitle e = if' (isJust $ e ^? hasClass "value-title") $ e ^. attribute "title"
+
+extractValueClassPattern ∷ [Element → Maybe Text] → Element → Maybe Text
+extractValueClassPattern fs e = if' (isJust $ e ^? valueParts) $ extractValueParts
+  where extractValueParts   = Just . T.concat . catMaybes $ e ^.. valueParts . to extractValuePart
+        extractValuePart e' = asum $ fs <*> pure e'
+        valueParts          ∷ Applicative f => (Element → f Element) → Element → f Element
+        valueParts          = entire . hasOneClass ["value", "value-title"]
 
 findProperty ∷ Element → String → Maybe Element
 findProperty e n = e ^? entire . hasClass n
@@ -113,7 +131,18 @@ data PropType = P | U | Dt | E
 extractProperty ∷ PropType → String → Element → Maybe Text
 extractProperty P n e' = do
   e ← findProperty e' $ "p-" ++ n
-  asum $ [ extractValueClassPattern, extractValue ] <*> pure e
+  asum $ [ extractValueClassPattern [extractValueTitle, extractValue]
+         , extractValue ] <*> pure e
+extractProperty U n e' = do
+  e ← findProperty e' $ "u-" ++ n
+  asum $ [ getAAreaHref, getImgAudioVideoSourceSrc
+         , extractValueClassPattern [extractValueTitle, extractValue]
+         , getAbbrTitle, getDataInputValue, getAllText ] <*> pure e
+extractProperty Dt n e' = do
+  e ← findProperty e' $ "dt-" ++ n
+  let ms = [ getTimeInsDelDatetime, getAbbrTitle, getDataInputValue ]
+  asum $ (extractValueClassPattern ms) : ms ++ [getAllText] <*> pure e
+extractProperty E n e' = findProperty e' ("e-" ++ n) >>= getAllHtml
 
 implyProperty ∷ PropType → String → Element → Maybe Text
 implyProperty P "name"  e = asum $ [ getImgAreaAlt, getAbbrTitle
