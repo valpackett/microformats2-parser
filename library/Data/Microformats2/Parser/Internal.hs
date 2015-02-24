@@ -18,10 +18,17 @@ import           Safe (readMay)
 if' ∷ Bool → Maybe a → Maybe a
 if' c x = if c then x else Nothing
 
-hasOneClass ∷ Applicative φ ⇒ [String] → (Element → φ Element) → Element → φ Element
+notMicroformat ∷ Traversal' Element Element
+notMicroformat = attributeSatisfies "class" $ not . (≈ [re|h-\w+|])
+
+entireNotMicroformat ∷ Traversal' Element Element
+entireNotMicroformat f e@(Element _ _ ns) = com <$> f e <*> traverse (_Element (notMicroformat $ entireNotMicroformat f)) ns
+  where com (Element n a _) = Element n a
+
+hasOneClass ∷ [String] → Traversal' Element Element
 hasOneClass ns = attributeSatisfies "class" $ \a → any (\x → T.isInfixOf (T.pack x) a) ns
 
-hasClass ∷ Applicative φ ⇒ String → (Element → φ Element) → Element → φ Element
+hasClass ∷ String →  Traversal' Element Element
 hasClass n = attributeSatisfies "class" $ T.isInfixOf . T.pack $ n
 
 getOnlyChildren ∷ Element → [Element]
@@ -56,7 +63,7 @@ _ContentWithAlts = prism' NodeContent $ \s → case s of
   NodeElement e → e ^. el "img" . attribute "alt"
   _ → Nothing
 
-basicText ∷ Applicative φ ⇒ (Text → φ Text) → Element → φ Element
+basicText ∷ Traversal' Element Text
 basicText = entire . nodes . traverse . _Content'
 
 getText ∷ Element → Maybe Text
@@ -121,7 +128,7 @@ extractValueClassPattern fs e = if' (isJust $ e ^? valueParts) $ extractValuePar
         valueParts          = entire . hasOneClass ["value", "value-title"]
 
 findProperty ∷ Element → String → [Element]
-findProperty e n = e ^.. entire . hasClass n
+findProperty e n = e ^.. entireNotMicroformat . hasClass n
 
 data PropType = P | U | Dt | E
 
