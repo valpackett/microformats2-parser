@@ -6,8 +6,8 @@ homepage:        https://codeberg.org/valpackett/microformats2-parser
 author:          Val Packett
 copyright:       2015 Val Packett <val@packett.cool>
 maintainer:      val@packett.cool
-license:         OtherLicense
-license-file:    COPYING
+license:         PublicDomain
+license-file:    UNLICENSE
 build-type:      Simple
 cabal-version:   >= 1.18
 extra-source-files:
