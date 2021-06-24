@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, OverloadedStrings, UnicodeSyntax #-}
+{-# LANGUAGE NoImplicitPrelude, OverloadedStrings, UnicodeSyntax, TemplateHaskell #-}
 
 module WebApp (app) where
 
@@ -15,6 +15,7 @@ import           Web.Scotty hiding (html)
 import           Text.Blaze.Html5 as H hiding (main, param, object, base)
 import           Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import           GitHash
 
 
 exampleValue ∷ TL.Text
@@ -47,6 +48,13 @@ homePage v = docTypeHtml $ do
       input ! name "base" ! type_ "url" ! placeholder "https://example.com/base/url/for/resolving/relative/urls"
       button "Parse!"
     footer $ do
+      let gi = $$tGitInfoCwd
+      p $ do
+        "Version: "
+        a ! href (toValue $ "https://codeberg.org/valpackett/microformats2-parser/commit/" <> giHash gi) $ toMarkup $ take 12 $ giHash gi
+        " ("
+        toMarkup $ giCommitDate gi
+        ")"
       a ! href "https://unrelenting.technology" ! rel "author" $ "unrelenting.technology"
 
 app ∷ IO Application
