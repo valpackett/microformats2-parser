@@ -3,6 +3,7 @@
 module Data.Microformats2.Jf2 (mf2ToJf2) where
 
 import           Prelude.Compat
+import           Control.Lens
 import           Data.Maybe
 import           Data.Aeson.Lens
 import qualified Data.HashMap.Strict as HMS

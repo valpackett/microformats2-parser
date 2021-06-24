@@ -2,4 +2,7 @@ flags:
   wai-cli: { tls: false }
 packages:
   - '.'
-resolver: nightly-2018-07-09
+extra-deps:
+  - wai-cli-0.2.3
+  - socket-activation-0.1.0.2
+resolver: lts-18.0

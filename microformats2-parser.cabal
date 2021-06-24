@@ -36,6 +36,7 @@ library
       , vector
       , aeson
       , aeson-qq
+      , lens
       , lens-aeson
       , data-default
       , html-conduit

@@ -6,6 +6,7 @@ module Data.Microformats2.Parser.UnsafeUtil (
 ) where
 
 import           Prelude.Compat
+import           Control.Lens as X hiding (re, (.=))
 import           Data.Aeson
 import           Data.Aeson.Types as X
 import           Data.Default as X
@@ -15,7 +16,7 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Vector as V
 import qualified Data.HashMap.Strict as HMS
 import           Text.Regex.PCRE.Heavy
-import           Text.XML.Lens as X hiding (re, (.=))
+import           Text.XML.Lens as X
 import           Text.HTML.DOM as X (sinkDoc, parseLBS)
 import           Text.Blaze
 import           Text.Blaze.Renderer.Text

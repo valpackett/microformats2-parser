@@ -74,8 +74,8 @@ extractValueClassPattern ∷ [Element → Maybe Text] → Element → Maybe [Tex
 extractValueClassPattern fs e = if' (isJust $ e ^? valueParts) extractValueParts
   where extractValueParts   = Just . catMaybes $ e ^.. valueParts . to extractValuePart
         extractValuePart e' = asum $ fs <*> pure e'
-        valueParts          ∷ Applicative φ => (Element → φ Element) → Element → φ Element
-        valueParts          = entire . hasOneClass ["value", "value-title"]
+        valueParts          ∷ (Applicative φ, Contravariant φ) => (Element → φ Element) → Element → φ Element
+        valueParts          = cosmos . hasOneClass ["value", "value-title"]
 
 extractValueClassPatternConcat ∷ [Element → Maybe Text] → Element → Maybe Text
 extractValueClassPatternConcat fs e = T.concat <$> extractValueClassPattern fs e

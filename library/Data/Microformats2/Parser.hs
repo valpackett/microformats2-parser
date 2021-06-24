@@ -64,7 +64,7 @@ addImpliedProperties ∷ Mf2ParserSettings → Element → Value → Value
 addImpliedProperties settings e v@(Object o) = Object $ addIfNull "photo" "photo" resolveURI' $ addIfNull "url" "url" resolveURI' $ addIfNullAndNoOthers "name" "name" id o
   where addIfNull nameJ nameH f obj = if isNothing $ v ^? key nameJ then HMS.insert nameJ (vsingleton $ f <$> implyProperty nameH e) obj else obj
         addIfNullAndNoOthers nameJ nameH f obj =
-          if isNothing (v ^? key nameJ) && isNothing (v ^? key "children") && isNothing (e ^? plate . entire . peElements)
+          if isNothing (v ^? key nameJ) && isNothing (v ^? key "children") && isNothing (e ^? plate . cosmos . peElements)
              then HMS.insert nameJ (vsingleton $ f <$> implyProperty nameH e) obj else obj
         peElements = attributeSatisfies "class" $ any (\x → isPClass x || isEClass x) . T.split isSpace
         resolveURI' = resolveURI $ baseUri settings
@@ -72,7 +72,7 @@ addImpliedProperties _ _ v = v
 
 removePropertiesOfNestedMicroformats ∷ [Element] → [Element] → [Element]
 removePropertiesOfNestedMicroformats nmf2s = filter (not . isNested)
-    where isNested e = any (\e' → e `elem` filter (/= e') (e' ^.. entire)) nmf2s
+    where isNested e = any (\e' → e `elem` filter (/= e') (e' ^.. cosmos)) nmf2s
 
 parseProperty ∷ Mf2ParserSettings → Element → [Pair]
 parseProperty settings e =
@@ -91,16 +91,16 @@ parseH settings e =
     , "shape"      .= fromMaybe Null (String <$> e ^? el "area" . attr "shape")
     , "coords"     .= fromMaybe Null (String <$> e ^? el "area" . attr "coords") ]
   where childrenMf2 = map ((\x → addValue "p" x Null) . parseH settings) $ filter (not . isProperty) $ deduplicateElements allMf2Descendants
-        allMf2Descendants = filter (/= e) $ e ^.. entire . mf2Elements
+        allMf2Descendants = filter (/= e) $ e ^.. cosmos . mf2Elements
         -- we have to do all of this because multiple elements can become multiple properties (with overlap)
         properties = Object $ HMS.filter (not . emptyVal) properties'
         (Object properties') = addImpliedProperties settings e $ object $ map mergeProps $ groupBy' fst properties''
-        properties'' = concatMap (parseProperty settings) $ removePropertiesOfNestedMicroformats allMf2Descendants $ filter (/= e) $ e ^.. entire . propertyElements
+        properties'' = concatMap (parseProperty settings) $ removePropertiesOfNestedMicroformats allMf2Descendants $ filter (/= e) $ e ^.. cosmos . propertyElements
 
 -- | Parses Microformats 2 from an HTML Element into a JSON Value.
 parseMf2 ∷ Mf2ParserSettings → Element → Value
 parseMf2 settings rootEl = object [ "items" .= items, "rels" .= rels, "rel-urls" .= relUrls ]
-  where items = map (parseH settings') $ deduplicateElements $ rootEl' ^.. entire . mf2Elements
+  where items = map (parseH settings') $ deduplicateElements $ rootEl' ^.. cosmos . mf2Elements
         rels = object $ map (\(r, es) → r .= map snd es) $ groupBy' fst $ expandSnd $ map (\e → (T.split isSpace (e ^. attr "rel"), resolveURI (baseUri settings') $ e ^. attr "href")) linkEls
         relUrls = object $ map relUrlObject linkEls
         relUrlObject e = resolveURI (baseUri settings') (e ^. attr "href") .= object (filter (not . emptyVal . snd) [
@@ -110,9 +110,9 @@ parseMf2 settings rootEl = object [ "items" .= items, "rels" .= rels, "rel-urls"
           , linkAttr "media" "media" e
           , linkAttr "hreflang" "hreflang" e ])
         linkAttr nameJ nameH e = nameJ .= fromMaybe Null (String <$> e ^? attr nameH)
-        linkEls = filter (isJust . (^? attr "href")) $ filter (isJust . (^? attr "rel")) $ rootEl' ^.. entire . els [ "a", "link" ]
+        linkEls = filter (isJust . (^? attr "href")) $ filter (isJust . (^? attr "rel")) $ rootEl' ^.. cosmos . els [ "a", "link" ]
         -- Obligatory WTF comment about base[href] being relative to the URI the page was requested from! <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base>
-        settings' = settings { baseUri = case (baseUri settings, parseURIReference =<< T.unpack <$> (rootEl' ^? entire . el "base" . attr "href")) of
+        settings' = settings { baseUri = case (baseUri settings, parseURIReference =<< T.unpack <$> (rootEl' ^? cosmos . el "base" . attr "href")) of
                                            (Just sU, Just tU) → Just (tU `relativeTo` sU)
                                            (Just sU, Nothing) → Just sU
                                            (Nothing, Just tU) → Just tU

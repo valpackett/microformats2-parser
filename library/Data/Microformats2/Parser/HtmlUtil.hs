@@ -85,7 +85,7 @@ getProcessedInnerHtml Sanitize b e = getInnerHtmlSanitized b e
 
 deduplicateElements ∷ [Element] → [Element]
 deduplicateElements es = filter (not . isNested) es
-  where isNested e = any (\e' → e `elem` filter (/= e') (e' ^.. entire)) es
+  where isNested e = any (\e' → e `elem` filter (/= e') (e' ^.. cosmos)) es
         -- not the fastest function I guess...
 
 escapeHtml ∷ Text → Text
