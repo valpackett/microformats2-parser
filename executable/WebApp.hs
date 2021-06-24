@@ -34,8 +34,6 @@ homePage v = docTypeHtml $ do
       " "
       a ! href "https://hackage.haskell.org/package/microformats2-parser" $ img ! alt "Hackage" ! src "https://img.shields.io/hackage/v/microformats2-parser.svg?style=flat"
       " "
-      a ! href "https://travis-ci.org/myfreeweb/microformats2-parser" $ img ! alt "Build Status" ! src "https://img.shields.io/travis/myfreeweb/microformats2-parser.svg?style=flat"
-      " "
       a ! href "http://unlicense.org" $ img ! alt "unlicense" ! src "https://img.shields.io/badge/un-license-green.svg?style=flat"
     p "This is a test page for the Microformats 2 Haskell parser."
     p "Notes:"

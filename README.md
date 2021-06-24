@@ -1,5 +1,4 @@
 [![Hackage](https://img.shields.io/hackage/v/microformats2-parser.svg?style=flat)](https://hackage.haskell.org/package/microformats2-parser)
-[![Build Status](https://img.shields.io/travis/unrelentingtech/microformats2-parser.svg?style=flat)](https://travis-ci.org/unrelentingtech/microformats2-parser)
 [![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](http://unlicense.org)
 
 # microformats2-parser
