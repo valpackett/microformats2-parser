@@ -66,6 +66,7 @@ executable microformats2-parser
         base >= 4.7.0.0 && < 5
       , base-compat >= 0.8.0
       , options
+      , wai
       , wai-cli
       , wai-extra
       , network
@@ -81,7 +82,8 @@ executable microformats2-parser
     default-language: Haskell2010
     ghc-options: -Wall -threaded -rtsopts "-with-rtsopts=-N -qa -qm"
     hs-source-dirs: executable
-    main-is: Main.hs
+    main-is: Server.hs
+    other-modules: WebApp
 
 test-suite tests
     build-depends:
