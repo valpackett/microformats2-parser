@@ -27,6 +27,7 @@ library
       , transformers
       , text
       , bytestring
+      , case-insensitive
       , time
       , either
       , safe

@@ -88,8 +88,8 @@ parseH settings e =
       "type"       .= filter isMf2Class (classes e)
     , "properties" .= properties
     , "children"   .= childrenMf2
-    , "shape"      .= fromMaybe Null (String <$> e ^? el "area" . attr "shape")
-    , "coords"     .= fromMaybe Null (String <$> e ^? el "area" . attr "coords") ]
+    , "shape"      .= fromMaybe Null (String <$> e ^? named "area" . attr "shape")
+    , "coords"     .= fromMaybe Null (String <$> e ^? named "area" . attr "coords") ]
   where childrenMf2 = map ((\x → addValue "p" x Null) . parseH settings) $ filter (not . isProperty) $ deduplicateElements allMf2Descendants
         allMf2Descendants = filter (/= e) $ e ^.. cosmos . mf2Elements
         -- we have to do all of this because multiple elements can become multiple properties (with overlap)
@@ -112,7 +112,7 @@ parseMf2 settings rootEl = object [ "items" .= items, "rels" .= rels, "rel-urls"
         linkAttr nameJ nameH e = nameJ .= fromMaybe Null (String <$> e ^? attr nameH)
         linkEls = filter (isJust . (^? attr "href")) $ filter (isJust . (^? attr "rel")) $ rootEl' ^.. cosmos . els [ "a", "link" ]
         -- Obligatory WTF comment about base[href] being relative to the URI the page was requested from! <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base>
-        settings' = settings { baseUri = case (baseUri settings, parseURIReference =<< T.unpack <$> (rootEl' ^? cosmos . el "base" . attr "href")) of
+        settings' = settings { baseUri = case (baseUri settings, parseURIReference =<< T.unpack <$> (rootEl' ^? cosmos . named "base" . attr "href")) of
                                            (Just sU, Just tU) → Just (tU `relativeTo` sU)
                                            (Just sU, Nothing) → Just sU
                                            (Nothing, Just tU) → Just tU

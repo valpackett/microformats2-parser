@@ -6,6 +6,7 @@ module Data.Microformats2.Parser.Property where
 import           Prelude.Compat
 import qualified Data.Text as T
 import           Data.Text (Text)
+import           Data.CaseInsensitive (CI)
 import           Data.Char (isSpace)
 import           Data.Foldable (asum)
 import qualified Data.Map as M
@@ -43,21 +44,21 @@ hasClass n = attributeSatisfies "class" $ \a → (T.pack n) `elem` (T.split isSp
 getOnlyChildren ∷ Element → [Element]
 getOnlyChildren e = if lengthOf plate e == 1 then e ^.. plate else []
 
-getOnlyChild, getOnlyOfType ∷ Name → Element → Maybe Element
+getOnlyChild, getOnlyOfType ∷ CI Text → Element → Maybe Element
 getOnlyChild n e = if' (fromMaybe False $ not <$> isProperty <$> r) $ r
-  where r = if' (lengthOf plate e == 1) $ e ^? plate . el n
+  where r = if' (lengthOf plate e == 1) $ e ^? plate . named n
 getOnlyOfType n e = if' (fromMaybe False $ not <$> isProperty <$> r) $ r
-  where r = if' (lengthOf (plate . el n) e == 1) $ e ^? plate . el n
+  where r = if' (lengthOf (plate . named n) e == 1) $ e ^? plate . named n
 
 els ∷ [Name] → Traversal' Element Element
 els ns f s = if elementName s `elem` ns then f s else pure s
 
 getAbbrTitle, getDataInputValue, getImgSrc, getObjectData, getImgAreaAlt, getAAreaHref, getImgAudioVideoSourceSrc, getTimeInsDelDatetime, getOnlyChildImgAreaAlt, \
 getOnlyChildAbbrTitle, getOnlyOfTypeImgSrc, getOnlyOfTypeObjectData, getOnlyOfTypeAAreaHref, extractValue, extractValueTitle ∷ Element → Maybe Text
-getAbbrTitle              e = e ^. el "abbr" . attribute "title"
+getAbbrTitle              e = e ^. named "abbr" . attribute "title"
 getDataInputValue         e = e ^. els ["data", "input"] . attribute "value"
-getImgSrc                 e = e ^. el "img" . attribute "src"
-getObjectData             e = e ^. el "object" . attribute "data"
+getImgSrc                 e = e ^. named "img" . attribute "src"
+getObjectData             e = e ^. named "object" . attribute "data"
 getImgAreaAlt             e = e ^. els ["img", "area"] . attribute "alt"
 getAAreaHref              e = e ^. els ["a", "area"] . attribute "href"
 getImgAudioVideoSourceSrc e = e ^. els ["img", "audio", "video", "source"] . attribute "src"
