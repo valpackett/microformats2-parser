@@ -4,6 +4,7 @@ module WebApp (app) where
 
 import           Prelude.Compat
 import           Data.Microformats2.Parser
+import           Data.Microformats2.Jf2
 import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Types (object)
 import           Data.Default
@@ -13,7 +14,7 @@ import           Network.Wai.Middleware.Autohead
 import           Network.URI (parseURI)
 import           Web.Scotty hiding (html)
 import           Text.Blaze.Html5 as H hiding (main, param, object, base)
-import           Text.Blaze.Html5.Attributes as A
+import           Text.Blaze.Html5.Attributes as A hiding (id)
 import           Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import           GitHash
 
@@ -26,7 +27,7 @@ homePage v = docTypeHtml $ do
   H.head $ do
     H.meta ! charset "utf-8"
     H.title "microformats2-parser"
-    H.style "body { font-family: 'Helvetica Neue', sans-serif; max-width: 900px; margin: 0 auto; } a { color: #ba2323; } a:hover { color: #da4343; } pre, input, textarea, button { width: 100%; } input, textarea { margin-bottom: 1em; } textarea { resize: vertical; min-height: 15em; } pre { white-space: pre-wrap; } footer { margin: 2em 0; }"
+    H.style "body { font-family: 'Helvetica Neue', sans-serif; max-width: 900px; margin: 0 auto; } a { color: #ba2323; } a:hover { color: #da4343; } pre, input:not([type=checkbox]), textarea, button { width: 100%; } input:not([type=checkbox]), textarea, label { margin-bottom: 1em; display: block; } textarea { resize: vertical; min-height: 15em; } pre { white-space: pre-wrap; } footer { margin: 2em 0; }"
   H.body $ do
     H.header $ do
       h1 $ do
@@ -46,6 +47,11 @@ homePage v = docTypeHtml $ do
     H.form ! method "post" ! action "parse.json" $ do
       textarea ! name "html" $ toHtml v
       input ! name "base" ! type_ "url" ! placeholder "https://example.com/base/url/for/resolving/relative/urls"
+      H.label $ do
+        input ! name "jf2" ! type_ "checkbox"
+        "Return "
+        a ! href "https://indieweb.org/jf2" $ "jf2"
+        " instead of full MF2 JSON"
       button "Parse!"
     footer $ do
       let gi = $$tGitInfoCwd
@@ -72,7 +78,8 @@ app = scottyApp $ do
   post "/parse.json" $ do
     hsrc ← param "html"
     base ← param "base" `rescue` (\_ → return "")
+    jf2 ← param "jf2" `rescue` (\_ → return ("" ∷ TL.Text))
     setHeader "Content-Type" "application/json; charset=utf-8"
     setHeader "Access-Control-Allow-Origin" "*"
     let root = documentRoot $ parseLBS hsrc
-    raw $ encodePretty $ parseMf2 (def { baseUri = parseURI base }) root
+    raw $ encodePretty $ (if jf2 /= "" then mf2ToJf2 else id) $ parseMf2 (def { baseUri = parseURI base }) root
