@@ -5,4 +5,7 @@ packages:
 extra-deps:
   - wai-cli-0.2.3
   - socket-activation-0.1.0.2
+  - safe-exceptions-checked-0.1.0
+  - aws-lambda-haskell-runtime-4.1.1
+  - aws-lambda-haskell-runtime-wai-2.0.1
 resolver: lts-18.0

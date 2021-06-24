@@ -1,0 +1,37 @@
+name: Build/test/deploy Lambda
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  testanddeploy:
+    runs-on: ubuntu-latest
+    container: amazonlinux:2
+    steps:
+    - run: yum install -y git gcc tar zip xz make gmp-devel zlib-devel pcre-devel
+    - run: mkdir ~/.stack
+    - uses: actions/checkout@v1
+    - uses: haskell/actions/setup@v1
+      with:
+        enable-stack: true
+        stack-no-global: true
+        stack-version: 'latest'
+    - uses: actions/cache@v1
+      with:
+        path: ~/.stack
+        key: stack-${{ hashFiles('stack.yaml') }}
+    - run: stack --allow-different-user test
+    - run: stack --allow-different-user build microformats2-parser:exe:microformats2-parser-lambda
+    - run: ldd -v $(stack path --local-install-root)/bin/microformats2-parser-lambda
+    - run: mkdir -p lambda/lib && cp $(stack path --local-install-root)/bin/microformats2-parser-lambda lambda/bootstrap
+    - run: (mkdir -p lambda && cd lambda && zip -y -r ../lambda.zip *)
+    - uses: stcalica/update-lambda@0.0.2
+      with:
+        package: lambda.zip
+        function-name: ${{ secrets.FUNCTION_NAME }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_SECRET_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # the IAM user for this only needs lambda:UpdateFunctionCode on this function

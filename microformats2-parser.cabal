@@ -85,6 +85,31 @@ executable microformats2-parser
     main-is: Server.hs
     other-modules: WebApp
 
+executable microformats2-parser-lambda
+    build-depends:
+        base >= 4.7.0.0 && < 5
+      , base-compat >= 0.8.0
+      , options
+      , aws-lambda-haskell-runtime
+      , aws-lambda-haskell-runtime-wai
+      , wai
+      , wai-extra
+      , network
+      , network-uri
+      , data-default
+      , text
+      , scotty
+      , aeson
+      , aeson-pretty
+      , blaze-html
+      , blaze-markup
+      , microformats2-parser
+    default-language: Haskell2010
+    ghc-options: -Wall -threaded -rtsopts "-with-rtsopts=-N -qa -qm"
+    hs-source-dirs: executable
+    main-is: Lambda.hs
+    other-modules: WebApp
+
 test-suite tests
     build-depends:
         base >= 4.7.0.0 && < 5

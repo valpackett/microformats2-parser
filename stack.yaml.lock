@@ -18,6 +18,27 @@ packages:
       sha256: 89e1527d4623083aa0e71a9709e9e7e5f19c5cfa64d6bd819ce69038aff590b8
   original:
     hackage: socket-activation-0.1.0.2
+- completed:
+    hackage: safe-exceptions-checked-0.1.0@sha256:ae142f284c6b102f0e7606a69a5719f4f72771d9cc353af72fa4484326689100,1603
+    pantry-tree:
+      size: 298
+      sha256: d1f8ba50967547f26cdc37cbc64bdc85af57d856986876a6a5767a61977bc299
+  original:
+    hackage: safe-exceptions-checked-0.1.0
+- completed:
+    hackage: aws-lambda-haskell-runtime-4.1.1@sha256:c3b3452d3a7f36950c22760fe44b51d49b43624fa3a0253e5bfc3d94809bb8fd,3024
+    pantry-tree:
+      size: 1453
+      sha256: b7e8426edb0b5d06713a26362308abbec03379e1f3ad9c6d63973088ad75cf62
+  original:
+    hackage: aws-lambda-haskell-runtime-4.1.1
+- completed:
+    hackage: aws-lambda-haskell-runtime-wai-2.0.1@sha256:faf95e0697905883c3998d3b451ee86ac4e811e0430d4cefbeabc4cdbf6e9a03,1986
+    pantry-tree:
+      size: 389
+      sha256: ca767a701c3c8328f37912c638970ab96941c3bd0bf72f69d0b8943ed1fd51e3
+  original:
+    hackage: aws-lambda-haskell-runtime-wai-2.0.1
 snapshots:
 - completed:
     size: 585393
