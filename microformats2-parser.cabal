@@ -5,7 +5,7 @@ description:     A parser for Microformats 2 (http://microformats.org/wiki/micro
 category:        Web
 homepage:        https://codeberg.org/valpackett/microformats2-parser
 author:          Val Packett
-copyright:       2015-2018 Val Packett <val@packett.cool>
+copyright:       2015-2021 Val Packett <val@packett.cool>
 maintainer:      val@packett.cool
 license:         PublicDomain
 license-file:    UNLICENSE

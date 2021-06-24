@@ -1,5 +1,5 @@
 [![Hackage](https://img.shields.io/hackage/v/microformats2-parser.svg?style=flat)](https://hackage.haskell.org/package/microformats2-parser)
-[![Build Status](https://img.shields.io/travis/myfreeweb/microformats2-parser.svg?style=flat)](https://travis-ci.org/myfreeweb/microformats2-parser)
+[![Build Status](https://img.shields.io/travis/unrelentingtech/microformats2-parser.svg?style=flat)](https://travis-ci.org/unrelentingtech/microformats2-parser)
 [![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](http://unlicense.org)
 
 # microformats2-parser
@@ -19,7 +19,7 @@ Originally created for [sweetroll].
 Also check out [http-link-header] because you often need to read links from the Link header!
 
 [Microformats 2]: http://microformats.org/wiki/microformats2
-[#IndieWeb]: http://indiewebcamp.com
+[#IndieWeb]: https://indieweb.org
 [sweetroll]: https://codeberg.org/valpackett/sweetroll
 [tagstream-conduit]: https://hackage.haskell.org/package/tagstream-conduit
 [JF2]: https://www.w3.org/TR/jf2/
@@ -71,11 +71,11 @@ $ stack ghci
 
 Please feel free to submit pull requests!
 
-By participating in this project you agree to follow the [Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/) and to release your contributions under the Unlicense.
+By participating in this project you agree to follow the [Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/) and to release your contributions under the Unlicense.
 
 [The list of contributors is available on GitHub](https://codeberg.org/valpackett/microformats2-parser/graphs/contributors).
 
 ## License
 
 This is free and unencumbered software released into the public domain.  
-For more information, please refer to the `UNLICENSE` file or [unlicense.org](http://unlicense.org).
+For more information, please refer to the `UNLICENSE` file or [unlicense.org](https://unlicense.org).
