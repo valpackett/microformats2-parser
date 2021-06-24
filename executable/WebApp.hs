@@ -42,7 +42,6 @@ homePage v = docTypeHtml $ do
       li $ do
         a ! href "http://enable-cors.org" $ "CORS is enabled"
         " on the endpoint (POST parse.json, form-urlencoded, 'html' and 'base' parameter)"
-      li $ a ! href "http://jsonview.com" $ "JSONView is awesome"
     H.form ! method "post" ! action "parse.json" $ do
       textarea ! name "html" $ toHtml v
       input ! name "base" ! type_ "url" ! placeholder "https://example.com/base/url/for/resolving/relative/urls"
