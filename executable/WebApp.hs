@@ -41,7 +41,7 @@ homePage v = docTypeHtml $ do
     ul $ do
       li "this demo page uses the Sanitize mode for e-*"
       li $ do
-        a ! href "http://enable-cors.org" $ "CORS is enabled"
+        a ! href "https://enable-cors.org" $ "CORS is enabled"
         " on the endpoint (POST parse.json, form-urlencoded, 'html' and 'base' parameter)"
     H.form ! method "post" ! action "parse.json" $ do
       textarea ! name "html" $ toHtml v
