@@ -27,7 +27,7 @@ homePage v = docTypeHtml $ do
   H.head $ do
     H.meta ! charset "utf-8"
     H.title "microformats2-parser"
-    H.style "body { font-family: 'Helvetica Neue', sans-serif; max-width: 900px; margin: 0 auto; } a { color: #ba2323; } a:hover { color: #da4343; } pre, input:not([type=checkbox]), textarea, button { width: 100%; } input:not([type=checkbox]), textarea, label { margin-bottom: 1em; display: block; } textarea { resize: vertical; min-height: 15em; } pre { white-space: pre-wrap; } footer { margin: 2em 0; }"
+    H.style "body { font-family: 'Helvetica Neue', sans-serif; max-width: 900px; margin: 0 auto; } a { color: #ba2323; } a:hover { color: #da4343; } pre, input:not([type=checkbox]), textarea, button { width: 100%; border-radius: 3px; } input:not([type=checkbox]), textarea, label { margin-bottom: 1em; display: block; } textarea { resize: vertical; min-height: 15em; } pre { white-space: pre-wrap; } footer { margin: 2em 0; } @media screen and (prefers-color-scheme: dark) { html { background: #222; color: #f1f1f1; } input, textarea { background: #444; color: #fefefe; } a { color: #da4343; } a:hover { color: #ea6363; } }"
   H.body $ do
     H.header $ do
       h1 $ do
