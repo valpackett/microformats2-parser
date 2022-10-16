@@ -32,7 +32,7 @@ homePage v = docTypeHtml $ do
     H.header $ do
       h1 $ do
         a ! href "https://codeberg.org/valpackett/microformats2-parser" $ "microformats2-parser"
-      a ! href "https://codeberg.org/valpackett/microformats2-parser" $ img ! alt "GitHub" ! src "https://img.shields.io/badge/git-hub-gray.svg?style=flat"
+      a ! href "https://codeberg.org/valpackett/microformats2-parser" $ img ! alt "Codeberg" ! src "https://img.shields.io/badge/code-berg-blue.svg?style=flat"
       " "
       a ! href "https://hackage.haskell.org/package/microformats2-parser" $ img ! alt "Hackage" ! src "https://img.shields.io/hackage/v/microformats2-parser.svg?style=flat"
       " "
@@ -61,7 +61,8 @@ homePage v = docTypeHtml $ do
         " ("
         toMarkup $ giCommitDate gi
         ")"
-      a ! href "https://unrelenting.technology" ! rel "author" $ "unrelenting.technology"
+      "made by "
+      a ! href "https://val.packett.cool" ! rel "author" $ "Val Packett"
 
 app ∷ IO Application
 app = scottyApp $ do

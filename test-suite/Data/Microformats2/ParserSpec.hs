@@ -164,15 +164,15 @@ spec = do
   <head><link rel="alternate feed me" href="/atom.xml" type="application/atom+xml"></head>
   <body>
     <a href="//example.com">test</a>
-    <a href="https://twitter.com/myfreeweb" rel=me>twitter</a>
-    <p><span><a href="https://codeberg.org/valpackett" rel=me media=handheld hreflang=en>github</a></span></p>
+    <a href="https://val.packett.cool" rel=me>website</a>
+    <p><span><a href="https://codeberg.org/valpackett" rel=me media=handheld hreflang=en>codeberg</a></span></p>
     <footer><a href="/-1" rel="prev">-1</a></footer>
   </body>
 </html>|] `shouldBe` [json|{
     "items": [],
     "rels": {
         "feed": [ "/atom.xml" ],
-        "me": [ "https:\/\/github.com\/myfreeweb", "https:\/\/twitter.com\/myfreeweb", "/atom.xml" ],
+        "me": [ "https:\/\/codeberg.org\/valpackett", "https:\/\/val.packett.cool", "/atom.xml" ],
         "alternate": [ "/atom.xml" ],
         "prev": [ "/-1" ]
     },
@@ -181,12 +181,12 @@ spec = do
             "type": "application/atom+xml",
             "rels": [ "alternate", "feed", "me" ]
         },
-        "https://twitter.com/myfreeweb": { 
-            "text": "twitter",
+        "https://val.packett.cool": { 
+            "text": "website",
             "rels": [ "me" ]
         },
         "https://codeberg.org/valpackett": { 
-            "text": "github",
+            "text": "codeberg",
             "rels": [ "me" ],
             "media": "handheld",
             "hreflang": "en"

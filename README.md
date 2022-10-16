@@ -1,11 +1,9 @@
 [![Hackage](https://img.shields.io/hackage/v/microformats2-parser.svg?style=flat)](https://hackage.haskell.org/package/microformats2-parser)
-[![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](http://unlicense.org)
+[![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](https://unlicense.org)
 
 # microformats2-parser
 
 [Microformats 2] parser for Haskell! [#IndieWeb]
-
-Originally created for [sweetroll].
 
 - parses `items`, `rels`, `rel-urls`
 - resolves relative URLs (with support for the `<base>` tag), including inside of `html` for `e-*` properties
@@ -19,7 +17,6 @@ Also check out [http-link-header] because you often need to read links from the 
 
 [Microformats 2]: http://microformats.org/wiki/microformats2
 [#IndieWeb]: https://indieweb.org
-[sweetroll]: https://codeberg.org/valpackett/sweetroll
 [tagstream-conduit]: https://hackage.haskell.org/package/tagstream-conduit
 [JF2]: https://www.w3.org/TR/jf2/
 [http-link-header]: https://codeberg.org/valpackett/http-link-header
@@ -65,14 +62,6 @@ $ stack ghci
 ```
 
 [stack]: https://github.com/commercialhaskell/stack
-
-## Contributing
-
-Please feel free to submit pull requests!
-
-By participating in this project you agree to follow the [Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/) and to release your contributions under the Unlicense.
-
-[The list of contributors is available on GitHub](https://codeberg.org/valpackett/microformats2-parser/graphs/contributors).
 
 ## License
 
