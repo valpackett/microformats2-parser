@@ -22,6 +22,7 @@ jobs:
       with:
         path: ~/.stack
         key: stack-${{ hashFiles('stack.yaml') }}
+    - run: git config --global --add safe.directory /__w/microformats2-parser/microformats2-parser
     - run: stack --allow-different-user test
     - run: stack --allow-different-user build microformats2-parser:exe:microformats2-parser-lambda
     - run: ldd -v $(stack path --local-install-root)/bin/microformats2-parser-lambda
