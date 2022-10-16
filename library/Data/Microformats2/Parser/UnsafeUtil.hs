@@ -1,4 +1,4 @@
-{-# LANGUAGE Trustworthy, NoImplicitPrelude, OverloadedStrings, UnicodeSyntax, QuasiQuotes #-}
+{-# LANGUAGE Trustworthy, NoImplicitPrelude, OverloadedStrings, UnicodeSyntax, QuasiQuotes, CPP #-}
 
 module Data.Microformats2.Parser.UnsafeUtil (
   module Data.Microformats2.Parser.UnsafeUtil
@@ -14,7 +14,11 @@ import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Vector as V
-import qualified Data.HashMap.Strict as HMS
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.KeyMap as KM
+#else
+import qualified Data.HashMap.Strict as KM
+#endif
 import           Text.Regex.PCRE.Heavy
 import           Text.XML.Lens as X
 import           Text.HTML.DOM as X (sinkDoc, parseLBS)
@@ -25,7 +29,7 @@ collapseWhitespace ∷ T.Text → T.Text
 collapseWhitespace = gsub [re|(\s|&nbsp;)+|] (" " ∷ String)
 
 emptyVal ∷ Value → Bool
-emptyVal (Object o) = HMS.null o
+emptyVal (Object o) = KM.null o
 emptyVal (Array v) = V.null v
 emptyVal (String s) = T.null s
 emptyVal Null = True

@@ -12,12 +12,16 @@ packages:
   original:
     hackage: socket-activation-0.1.0.2
 - completed:
-    hackage: aws-lambda-haskell-runtime-4.1.1@sha256:c3b3452d3a7f36950c22760fe44b51d49b43624fa3a0253e5bfc3d94809bb8fd,3024
+    name: aws-lambda-haskell-runtime
     pantry-tree:
-      sha256: b7e8426edb0b5d06713a26362308abbec03379e1f3ad9c6d63973088ad75cf62
-      size: 1453
+      sha256: cbe818955160fdf67ee2f9733cfb2d6389a1d58d3fa18fe1823fe56c98443a10
+      size: 3424
+    sha256: 28ee50f751329ae2b5d270f00f780dad45f61377a8096ea02cad29e7ec4a33c8
+    size: 30452
+    url: https://github.com/nomeata/aws-lambda-haskell-runtime/archive/fa19268282a5afff7aa0ba8babc723d835bed4f1.tar.gz
+    version: 4.1.1
   original:
-    hackage: aws-lambda-haskell-runtime-4.1.1
+    url: https://github.com/nomeata/aws-lambda-haskell-runtime/archive/fa19268282a5afff7aa0ba8babc723d835bed4f1.tar.gz
 - completed:
     hackage: aws-lambda-haskell-runtime-wai-2.0.2@sha256:459c183c37e99e13c83002bedb2dc58c2257d2741aeec3f86571ee58361e9404,1986
     pantry-tree:

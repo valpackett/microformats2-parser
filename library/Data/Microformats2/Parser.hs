@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe, NoImplicitPrelude, UnicodeSyntax, OverloadedStrings #-}
+{-# LANGUAGE Trustworthy, NoImplicitPrelude, UnicodeSyntax, OverloadedStrings, CPP #-}
 
 module Data.Microformats2.Parser (
   Mf2ParserSettings (..)
@@ -18,11 +18,24 @@ import           Data.Microformats2.Parser.HtmlUtil
 import           Data.Microformats2.Parser.Util
 import           Data.Aeson.Lens
 import           Data.Char (isSpace)
-import qualified Data.HashMap.Strict as HMS
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.KeyMap as KM
+import qualified Data.Aeson.Key as K
+#else
+import qualified Data.HashMap.Strict as KM
+#endif
 import           Data.Maybe
 import qualified Data.Text as T
 import           Network.URI
 import           Safe (headMay)
+
+#if MIN_VERSION_aeson(2,0,0)
+toK :: T.Text -> K.Key
+toK = K.fromText
+#else
+toK :: a -> a
+toK = id
+#endif
 
 data Mf2ParserSettings = Mf2ParserSettings
   { htmlMode ∷ HtmlContentMode
@@ -54,18 +67,18 @@ extractProperty _ _    _ = Null
 -- lens-aeson's 'key' doesn't add new keys :-(
 
 addValue ∷ T.Text → Value → Value → Value
-addValue "p" v@(Object o) f = let v' = (fromMaybe f $ v ^? key "properties" . key "name" . nth 0) in Object $ if v' == Null then o else HMS.insert "value" v' o
-addValue "e" (Object o)   f = Object $ HMS.insert "value" (fromMaybe Null $ f ^? key "value") $ HMS.insert "html" (fromMaybe Null $ f ^? key "html") o
-addValue "u" v@(Object o) f = Object $ HMS.insert "value" (fromMaybe f $ v ^? key "properties" . key "url" . nth 0) o
-addValue _   (Object o)   f = Object $ HMS.insert "value" f o
+addValue "p" v@(Object o) f = let v' = (fromMaybe f $ v ^? key "properties" . key "name" . nth 0) in Object $ if v' == Null then o else KM.insert "value" v' o
+addValue "e" (Object o)   f = Object $ KM.insert "value" (fromMaybe Null $ f ^? key "value") $ KM.insert "html" (fromMaybe Null $ f ^? key "html") o
+addValue "u" v@(Object o) f = Object $ KM.insert "value" (fromMaybe f $ v ^? key "properties" . key "url" . nth 0) o
+addValue _   (Object o)   f = Object $ KM.insert "value" f o
 addValue _   x            _ = x
 
 addImpliedProperties ∷ Mf2ParserSettings → Element → Value → Value
 addImpliedProperties settings e v@(Object o) = Object $ addIfNull "photo" "photo" resolveURI' $ addIfNull "url" "url" resolveURI' $ addIfNullAndNoOthers "name" "name" id o
-  where addIfNull nameJ nameH f obj = if isNothing $ v ^? key nameJ then HMS.insert nameJ (vsingleton $ f <$> implyProperty nameH e) obj else obj
+  where addIfNull nameJ nameH f obj = if isNothing $ v ^? key nameJ then KM.insert (toK nameJ) (vsingleton $ f <$> implyProperty nameH e) obj else obj
         addIfNullAndNoOthers nameJ nameH f obj =
           if isNothing (v ^? key nameJ) && isNothing (v ^? key "children") && isNothing (e ^? plate . cosmos . peElements)
-             then HMS.insert nameJ (vsingleton $ f <$> implyProperty nameH e) obj else obj
+             then KM.insert (toK nameJ) (vsingleton $ f <$> implyProperty nameH e) obj else obj
         peElements = attributeSatisfies "class" $ any (\x → isPClass x || isEClass x) . T.split isSpace
         resolveURI' = resolveURI $ baseUri settings
 addImpliedProperties _ _ v = v
@@ -79,8 +92,8 @@ parseProperty settings e =
   let propNames = groupBy' snd $ map readPropertyName $ filter isPropertyClass $ classes e
       extractPropertyValue (t, _) = extractProperty settings t e in
   if any isMf2Class $ classes e
-     then map (\(n, ts) → n .= [ addValue (fst $ head ts) (parseH settings e) (extractPropertyValue $ head ts) ]) propNames
-     else map (\(n, ts) → n .= map extractPropertyValue ts) propNames
+     then map (\(n, ts) → (toK n) .= [ addValue (fst $ head ts) (parseH settings e) (extractPropertyValue $ head ts) ]) propNames
+     else map (\(n, ts) → (toK n) .= map extractPropertyValue ts) propNames
 
 parseH ∷ Mf2ParserSettings → Element → Value
 parseH settings e =
@@ -93,7 +106,7 @@ parseH settings e =
   where childrenMf2 = map ((\x → addValue "p" x Null) . parseH settings) $ filter (not . isProperty) $ deduplicateElements allMf2Descendants
         allMf2Descendants = filter (/= e) $ e ^.. cosmos . mf2Elements
         -- we have to do all of this because multiple elements can become multiple properties (with overlap)
-        properties = Object $ HMS.filter (not . emptyVal) properties'
+        properties = Object $ KM.filter (not . emptyVal) properties'
         (Object properties') = addImpliedProperties settings e $ object $ map mergeProps $ groupBy' fst properties''
         properties'' = concatMap (parseProperty settings) $ removePropertiesOfNestedMicroformats allMf2Descendants $ filter (/= e) $ e ^.. cosmos . propertyElements
 
@@ -101,9 +114,9 @@ parseH settings e =
 parseMf2 ∷ Mf2ParserSettings → Element → Value
 parseMf2 settings rootEl = object [ "items" .= items, "rels" .= rels, "rel-urls" .= relUrls ]
   where items = map (parseH settings') $ deduplicateElements $ rootEl' ^.. cosmos . mf2Elements
-        rels = object $ map (\(r, es) → r .= map snd es) $ groupBy' fst $ expandSnd $ map (\e → (T.split isSpace (e ^. attr "rel"), resolveURI (baseUri settings') $ e ^. attr "href")) linkEls
+        rels = object $ map (\(r, es) → (toK r) .= map snd es) $ groupBy' fst $ expandSnd $ map (\e → (T.split isSpace (e ^. attr "rel"), resolveURI (baseUri settings') $ e ^. attr "href")) linkEls
         relUrls = object $ map relUrlObject linkEls
-        relUrlObject e = resolveURI (baseUri settings') (e ^. attr "href") .= object (filter (not . emptyVal . snd) [
+        relUrlObject e = toK (resolveURI (baseUri settings') (e ^. attr "href")) .= object (filter (not . emptyVal . snd) [
             "rels" .= T.split isSpace (e ^. attr "rel")
           , "text" .= fromMaybe Null (String <$> getInnerTextWithImgs e)
           , linkAttr "type" "type" e
