@@ -62,51 +62,65 @@ library
     ghc-options: -Wall
     hs-source-dirs: library
 
+flag serverbin
+    description: Build demo/API HTTP server binary
+    default: False
+
 executable microformats2-parser
-    build-depends:
-        base >= 4.7.0.0 && < 5
-      , base-compat >= 0.8.0
-      , options
-      , wai
-      , wai-cli
-      , wai-extra
-      , network
-      , network-uri
-      , data-default
-      , text
-      , scotty
-      , aeson
-      , aeson-pretty
-      , blaze-html
-      , blaze-markup
-      , githash
-      , microformats2-parser
+    if flag(serverbin)
+        build-depends:
+            base >= 4.7.0.0 && < 5
+          , base-compat >= 0.8.0
+          , options
+          , wai
+          , wai-cli
+          , wai-extra
+          , network
+          , network-uri
+          , data-default
+          , text
+          , scotty
+          , aeson
+          , aeson-pretty
+          , blaze-html
+          , blaze-markup
+          , githash
+          , microformats2-parser
+    else
+        buildable: False
     default-language: Haskell2010
     ghc-options: -Wall -threaded -rtsopts "-with-rtsopts=-N -qa -qm"
     hs-source-dirs: executable
     main-is: Server.hs
     other-modules: WebApp
 
+flag serverlambda
+    description: Build demo/API AWS Lambda handler binary
+    default: False
+
 executable microformats2-parser-lambda
-    build-depends:
-        base >= 4.7.0.0 && < 5
-      , base-compat >= 0.8.0
-      , options
-      , aws-lambda-haskell-runtime
-      , aws-lambda-haskell-runtime-wai
-      , wai
-      , wai-extra
-      , network
-      , network-uri
-      , data-default
-      , text
-      , scotty
-      , aeson
-      , aeson-pretty
-      , blaze-html
-      , blaze-markup
-      , githash
-      , microformats2-parser
+    if flag(serverlambda)
+        build-depends:
+                base >= 4.7.0.0 && < 5
+              , base-compat >= 0.8.0
+              , options
+              , aws-lambda-haskell-runtime
+              , aws-lambda-haskell-runtime-wai
+              , wai
+              , wai-extra
+              , network
+              , network-uri
+              , data-default
+              , text
+              , scotty
+              , aeson
+              , aeson-pretty
+              , blaze-html
+              , blaze-markup
+              , githash
+              , microformats2-parser
+    else
+        buildable: False
     default-language: Haskell2010
     ghc-options: -Wall -threaded -rtsopts "-with-rtsopts=-N -qa -qm"
     hs-source-dirs: executable

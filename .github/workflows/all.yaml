@@ -24,7 +24,7 @@ jobs:
         key: stack-${{ hashFiles('stack.yaml') }}
     - run: git config --global --add safe.directory /__w/microformats2-parser/microformats2-parser
     - run: stack --allow-different-user test
-    - run: stack --allow-different-user build microformats2-parser:exe:microformats2-parser-lambda
+    - run: stack --allow-different-user build microformats2-parser:exe:microformats2-parser-lambda --flag microformats2-parser:serverlambda 
     - run: ldd -v $(stack path --local-install-root)/bin/microformats2-parser-lambda
     - run: mkdir -p lambda/lib && cp $(stack path --local-install-root)/bin/microformats2-parser-lambda lambda/bootstrap
     - run: (mkdir -p lambda && cd lambda && zip -y -r ../lambda.zip *)
